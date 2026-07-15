@@ -23,7 +23,14 @@ PUSHPLUS_TOKEN = "db8ea6c096664161ad8351f3b9d8dd00"  # 填好后，脚本运行�
 
 def get_current_items():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)   # 调试时可改为 True
+        browser = p.chromium.launch(
+        headless=True,args=[
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+        ]
+        )
 
         # ===== 【修改】创建带状态的 context =====
         if os.path.exists(STORAGE_STATE_FILE):
