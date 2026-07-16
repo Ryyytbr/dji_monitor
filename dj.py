@@ -73,7 +73,7 @@ def get_current_items():
             page.wait_for_selector('.app-form', timeout=15000)
             print("✅ 已进入换购方案页面")
         else:
-            print("✅ 已在换购方案页面")
+            print("✅ 已在换购方案页面？？没填写旧机！！")
 
         # ---------- 2. 抓取换购机型下拉列表（新方案） ----------
         # 等待下拉框容器稳定并可见
