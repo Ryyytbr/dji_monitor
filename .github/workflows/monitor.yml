@@ -2,28 +2,32 @@ name: DJI Recycle Monitor
 
 on:
   schedule:
+    # 每 2 小时运行一次（分钟为 0，小时为 0,2,4,6...）
     - cron: '0 */2 * * *'
+  # 支持手动触发（方便调试）
   workflow_dispatch:
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 设置 Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
-      - name: 安装依赖
+      - name: Install dependencies
         run: |
-          pip install playwright requests
+          pip install -r requirements.txt
+          # 安装 playwright 浏览器（chromium）
           playwright install chromium
 
-      - name: 运行监控脚本
+      - name: Run monitor script
         env:
+          DJI_USERNAME: ${{ secrets.DJI_USERNAME }}
+          DJI_PASSWORD: ${{ secrets.DJI_PASSWORD }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
         run: python dj.py
