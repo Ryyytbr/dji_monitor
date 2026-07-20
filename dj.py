@@ -47,13 +47,26 @@ def send_pushplus(title, content):
 
 def get_current_items():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=HEADLESS, args=['--no-sandbox'] if HEADLESS else [])
-        context = browser.new_context()
+        browser = p.chromium.launch(
+    headless=HEADLESS,
+    args=[
+        '--no-sandbox',
+        '--disable-blink-features=AutomationControlled',   # 去掉自动化标识
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+    ]
+)
+        context = browser.new_context(
+    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    viewport={'width': 1280, 'height': 800}
+)
         page = context.new_page()
         page.set_extra_http_headers({"User-Agent": "Mozilla/5.0"})
         page.goto(TARGET_URL, timeout=30000)
         page.wait_for_load_state("networkidle")
-
+        page.screenshot(path="page_loaded.png")   # 保存截图
+        
         # ---------- 1. 强制登录 ----------
         print("🔐 执行账号密码登录...")
 
