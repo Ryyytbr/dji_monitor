@@ -48,21 +48,27 @@ def send_pushplus(title, content):
 def get_current_items():
     with sync_playwright() as p:
         browser = p.chromium.launch(
-    headless=HEADLESS,
-    args=[
-        '--no-sandbox',
-        '--disable-blink-features=AutomationControlled',   # 去掉自动化标识
-        '--disable-features=IsolateOrigins,site-per-process',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-    ]
-)
+            headless=HEADLESS,
+            args=[
+                '--no-sandbox',
+                '--disable-blink-features=AutomationControlled',   # 去掉自动化标识
+                '--disable-features=IsolateOrigins,site-per-process',
+                '--disable-dev-shm-usage',
+                '--disable-gpu'
+            ]
+        )
         context = browser.new_context(
-    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    viewport={'width': 1280, 'height': 800}
-)
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+            viewport={'width': 1280, 'height': 800}
+        )
         page = context.new_page()
-        page.set_extra_http_headers({"User-Agent": "Mozilla/5.0"})
+        # 关键：去掉 navigator.webdriver 标志
+        page.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+        """)
+        
+        page.set_extra_http_headers({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"})
+
         page.goto(TARGET_URL, timeout=30000)
         page.wait_for_load_state("networkidle")
         page.screenshot(path="page_loaded.png")   # 保存截图
@@ -110,7 +116,7 @@ def get_current_items():
         # 填写账号
         try:
             username_input = page.locator('input[name="username"]')
-            username_input.wait_for(state="visible", timeout=10000)
+            username_input.wait_for(state="visible", timeout=30000)
             username_input.fill(DJI_USERNAME)
             print("  ✅ 填写账号")
         except Exception as e:
