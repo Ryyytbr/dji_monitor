@@ -31,3 +31,13 @@ jobs:
           DJI_PASSWORD: ${{ secrets.DJI_PASSWORD }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
         run: python dj.py
+        
+      - name: Upload screenshots if failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: |
+            *.png
+            *.html
+
