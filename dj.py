@@ -4,12 +4,10 @@ import time
 import requests
 from playwright.sync_api import sync_playwright
 
-import os
-DJI_USERNAME = os.environ.get("DJI_USERNAME")
-DJI_PASSWORD = os.environ.get("DJI_PASSWORD")
-PUSHPLUS_TOKEN = os.environ.get("PUSHPLUS_TOKEN")
-HEADLESS = True   # 改为 True，避免界面交互失败
-
+# ==================== 🧩 配置区（账号密码直接写入） ====================
+DJI_USERNAME = "15247323191"          # 你的大疆账号
+DJI_PASSWORD = "!!!TbR104"            # 你的大疆密码
+PUSHPLUS_TOKEN = "db8ea6c096664161ad8351f3b9d8dd00"                    # 推送token，不需要则留空
 
 OLD_DEVICE_MODEL = "精灵 Phantom 3 全系列"
 OLD_SERIAL = "0JXUE5Q0A1816E"
@@ -169,6 +167,7 @@ def get_current_items():
 
         # ---------- 4. 填写旧机信息 ----------
         # 再次确保在目标页面
+        page.screenshot(path="old_tel.png")
         if "recycle/apply" not in page.url:
             print("⚠️ 不在回收申请页面，尝试重新跳转...")
             page.goto(TARGET_URL, timeout=30000)
@@ -235,7 +234,7 @@ def get_current_items():
             # 点击下一步/查询
             try:
                 btn = page.locator("button:has-text('下一步'), button:has-text('查询')").first
-                btn.wait_for(state="visible", timeout=5000)
+                btn.wait_for(state="visible", timeout=15000)
                 btn.click()
                 print("  ✅ 点击下一步/查询按钮")
             except Exception as e:
@@ -243,6 +242,7 @@ def get_current_items():
                 page.screenshot(path="error_next_btn.png")
                 raise
 
+            page.screenshot(path="change.png")
             # 等待进入换购方案页面
             try:
                 page.wait_for_selector('.app-form, .atom-select', timeout=15000)
