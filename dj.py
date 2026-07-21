@@ -69,7 +69,68 @@ def get_current_items():
         
         page.set_extra_http_headers({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"})
 
+                # ---------- 0. 先访问登录页 ----------
+        LOGIN_URL = "https://account.dji.com/login"
+        page.goto(LOGIN_URL, timeout=60000)
+        page.wait_for_load_state("networkidle")
+        
+        # ---------- 1. 处理 Cookie 弹窗（如果有） ----------
+        try:
+            cookie_btn = page.locator('text=Accept All Cookies')
+            if cookie_btn.count() > 0:
+                cookie_btn.click(timeout=5000)
+                print("🍪 已接受 Cookie")
+        except:
+            pass
+        
+        # ---------- 2. 执行登录（元素定位要兼容） ----------
+        # 点击“密码登录”标签（如有）
+        try:
+            page.locator('text=密码登录').click(timeout=5000)
+        except:
+            pass
+        
+        # 填写账号 - 使用更通用的定位
+        try:
+            username_input = page.locator('input[type="text"], input[name="username"], input[placeholder*="邮箱"]').first
+            username_input.wait_for(state="visible", timeout=30000)
+            username_input.fill(DJI_USERNAME)
+            print("✅ 填写账号")
+        except Exception as e:
+            page.screenshot(path="error_username.png")
+            raise
+        
+        # 填写密码
+        try:
+            password_input = page.locator('input[type="password"]').first
+            password_input.wait_for(state="visible", timeout=30000)
+            password_input.fill(DJI_PASSWORD)
+            print("✅ 填写密码")
+        except Exception as e:
+            page.screenshot(path="error_password.png")
+            raise
+        
+        # 点击登录按钮
+        try:
+            login_btn = page.locator('button:has-text("登录"), button:has-text("Sign In")').first
+            login_btn.click(timeout=5000)
+            print("✅ 点击登录按钮")
+        except Exception as e:
+            page.screenshot(path="error_login_btn.png")
+            raise
+        
+        # 等待登录成功（URL 变化或特定元素出现）
+        page.wait_for_url(lambda url: "login" not in url, timeout=20000)
+        print("✅ 登录成功")
+        
+        # ---------- 3. 现在跳转到回收申请页面 ----------
         page.goto(TARGET_URL, timeout=30000)
+        page.wait_for_load_state("networkidle")
+        print(f"📍 当前 URL: {page.url}")
+        page.screenshot(path="after_login_apply.png")
+        
+        # 后面的“立即申请”、“填写旧机信息”等逻辑保持不变...
+        '''
         page.wait_for_load_state("networkidle")
         page.screenshot(path="page_loaded.png")   # 保存截图
         
@@ -162,7 +223,7 @@ def get_current_items():
         print("📍 当前 URL:", page.url)
         page.screenshot(path="after_login_before_apply.png")
         print("📸 已截图保存为 after_login_before_apply.png，请查看此页面是否有'立即申请'按钮")
-
+        '''
         # ---------- 3. 检查并点击“立即申请” ----------
         # 等待页面稳定
         page.wait_for_load_state("networkidle")
